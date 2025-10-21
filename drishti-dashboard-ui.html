@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drishti AI - Driver Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1e1e2e 0%, #2d2d44 100%);
+            color: #fff;
+            padding: 20px;
+        }
+        
+        .dashboard {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr;
+            grid-template-rows: auto auto auto;
+            gap: 15px;
+            height: 95vh;
+        }
+        
+        .panel {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 15px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .header {
+            grid-column: 1 / 4;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .status-indicators {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 5px 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+        }
+        
+        .indicator-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        .indicator-dot.green { background: #00ff88; }
+        .indicator-dot.yellow { background: #ffdd00; }
+        .indicator-dot.red { background: #ff4444; }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .main-view {
+            grid-column: 1 / 4;
+            grid-row: 2;
+            position: relative;
+            background: #000;
+            border: 3px solid #667eea;
+            min-height: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .camera-feed {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            background: linear-gradient(135deg, #1a1a2e 0%, #2d2d44 100%);
+        }
+        
+        .road-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 70%;
+            background: linear-gradient(180deg, transparent 0%, rgba(100, 100, 100, 0.3) 100%);
+        }
+        
+        .virtual-lane {
+            position: absolute;
+            bottom: 0;
+            height: 100%;
+            border: 2px solid #00ff88;
+            opacity: 0.6;
+        }
+        
+        .lane-left { left: 30%; width: 0; border-left: 2px dashed #00ff88; }
+        .lane-right { right: 30%; width: 0; border-right: 2px dashed #00ff88; }
+        
+        .hazard-marker {
+            position: absolute;
+            padding: 8px 12px;
+            background: rgba(255, 68, 68, 0.9);
+            border: 2px solid #ff0000;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: bold;
+            animation: alertPulse 1s infinite;
+        }
+        
+        @keyframes alertPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        .vehicle-marker {
+            position: absolute;
+            padding: 6px 10px;
+            background: rgba(0, 170, 255, 0.9);
+            border: 2px solid #00aaff;
+            border-radius: 6px;
+            font-size: 11px;
+        }
+        
+        .alerts-panel {
+            grid-column: 1;
+            grid-row: 3;
+        }
+        
+        .dynamics-panel {
+            grid-column: 2;
+            grid-row: 3;
+        }
+        
+        .status-panel {
+            grid-column: 3;
+            grid-row: 3;
+        }
+        
+        .panel-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+            color: #667eea;
+        }
+        
+        .alert-item {
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .alert-critical {
+            background: rgba(255, 68, 68, 0.2);
+            border-left: 4px solid #ff4444;
+        }
+        
+        .alert-warning {
+            background: rgba(255, 221, 0, 0.2);
+            border-left: 4px solid #ffdd00;
+        }
+        
+        .alert-info {
+            background: rgba(0, 170, 255, 0.2);
+            border-left: 4px solid #00aaff;
+        }
+        
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        
+        .metric-label {
+            font-size: 12px;
+            color: #aaa;
+        }
+        
+        .metric-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #00ff88;
+        }
+        
+        .sensor-status {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        
+        .sensor-item {
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .icon {
+            font-size: 20px;
+        }
+        
+        .minimap {
+            margin-top: 15px;
+            height: 150px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .vehicle-icon {
+            position: absolute;
+            bottom: 50%;
+            left: 50%;
+            transform: translate(-50%, 50%);
+            width: 20px;
+            height: 30px;
+            background: #00ff88;
+            clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+        }
+        
+        .detection-zone {
+            position: absolute;
+            bottom: 50%;
+            left: 50%;
+            transform: translate(-50%, 50%);
+            width: 80%;
+            height: 80%;
+            border: 2px dashed rgba(0, 255, 136, 0.3);
+            border-radius: 50%;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <!-- Header -->
+        <div class="header panel">
+            <div class="logo">
+                <span class="icon">🚗</span>
+                <span>Drishti AI</span>
+                <span style="font-size: 12px; opacity: 0.8;">v1.0 | Advanced Road Hazard Detection</span>
+            </div>
+            <div class="status-indicators">
+                <div class="indicator">
+                    <div class="indicator-dot green"></div>
+                    <span>AI Active</span>
+                </div>
+                <div class="indicator">
+                    <div class="indicator-dot green"></div>
+                    <span>Sensors OK</span>
+                </div>
+                <div class="indicator">
+                    <div class="indicator-dot yellow"></div>
+                    <span>Weather: Rain</span>
+                </div>
+                <div class="indicator">
+                    <div class="indicator-dot green"></div>
+                    <span>V2N Connected</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Camera View -->
+        <div class="main-view panel">
+            <div class="camera-feed">
+                <div class="road-overlay">
+                    <div class="virtual-lane lane-left"></div>
+                    <div class="virtual-lane lane-right"></div>
+                    
+                    <!-- Hazard Markers -->
+                    <div class="hazard-marker" style="top: 60%; left: 35%;">
+                        ⚠️ POTHOLE<br>
+                        <small>15m ahead</small>
+                    </div>
+                    
+                    <div class="vehicle-marker" style="top: 40%; right: 25%;">
+                        🚙 Vehicle<br>
+                        <small>50 km/h | 30m</small>
+                    </div>
+                    
+                    <div class="vehicle-marker" style="top: 70%; left: 15%; background: rgba(255, 136, 0, 0.9); border-color: #ff8800;">
+                        ⚡ Fast Approaching<br>
+                        <small>80 km/h | 20m</small>
+                    </div>
+                </div>
+                
+                <div style="position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.7); padding: 10px; border-radius: 8px; font-size: 12px;">
+                    <div>📷 Front Camera (Enhanced YOLOv8)</div>
+                    <div>🔍 Virtual Lanes: ACTIVE</div>
+                    <div>🎯 Detection: 6 objects</div>
+                    <div>⚡ FPS: 30 | Latency: 85ms</div>
+                </div>
+                
+                <div style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); padding: 10px; border-radius: 8px; font-size: 12px;">
+                    <div>📡 Radar: 77GHz ACTIVE</div>
+                    <div>🌧️ Weather Mode: Rain</div>
+                    <div>🎯 Fusion: EKF</div>
+                    <div>📍 GPS: RTK (<1m)</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Alerts Panel -->
+        <div class="alerts-panel panel">
+            <div class="panel-title">🚨 Active Alerts</div>
+            
+            <div class="alert-item alert-critical">
+                <span class="icon">⚠️</span>
+                <div>
+                    <strong>POTHOLE AHEAD</strong><br>
+                    <small>15m | Slow to 40 km/h</small>
+                </div>
+            </div>
+            
+            <div class="alert-item alert-warning">
+                <span class="icon">🚗</span>
+                <div>
+                    <strong>FAST REAR VEHICLE</strong><br>
+                    <small>20m | 80 km/h closing</small>
+                </div>
+            </div>
+            
+            <div class="alert-item alert-warning">
+                <span class="icon">😤</span>
+                <div>
+                    <strong>DRIVER AGITATION</strong><br>
+                    <small>Overtake risk detected</small>
+                </div>
+            </div>
+            
+            <div class="alert-item alert-info">
+                <span class="icon">👁️</span>
+                <div>
+                    <strong>BLIND SPOT CLEAR</strong><br>
+                    <small>Left lane safe</small>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Dynamics Panel -->
+        <div class="dynamics-panel panel">
+            <div class="panel-title">📊 Vehicle Dynamics</div>
+            
+            <div class="metric">
+                <div>
+                    <div class="metric-label">Current Speed</div>
+                    <div class="metric-value">65 km/h</div>
+                </div>
+                <div>
+                    <div class="metric-label">Recommended</div>
+                    <div class="metric-value" style="color: #ffdd00;">40 km/h</div>
+                </div>
+            </div>
+            
+            <div class="metric">
+                <div>
+                    <div class="metric-label">Front Distance</div>
+                    <div class="metric-value">30m</div>
+                </div>
+                <div>
+                    <div class="metric-label">Rear Distance</div>
+                    <div class="metric-value" style="color: #ff8800;">20m</div>
+                </div>
+            </div>
+            
+            <div class="metric">
+                <div>
+                    <div class="metric-label">Relative Velocity</div>
+                    <div class="metric-value">-15 km/h</div>
+                </div>
+                <div>
+                    <div class="metric-label">Braking Prediction</div>
+                    <div class="metric-value" style="color: #ff4444;">HIGH</div>
+                </div>
+            </div>
+            
+            <div class="minimap">
+                <div class="detection-zone"></div>
+                <div class="vehicle-icon"></div>
+                <div style="position: absolute; top: 10px; left: 50%; transform: translateX(-50%); font-size: 10px; color: #aaa;">
+                    360° Detection Zone
+                </div>
+            </div>
+        </div>
+        
+        <!-- Status Panel -->
+        <div class="status-panel panel">
+            <div class="panel-title">⚙️ System Status</div>
+            
+            <div class="sensor-status">
+                <div class="sensor-item">
+                    <span style="color: #00ff88;">✓</span>
+                    <span>Front Cam</span>
+                </div>
+                <div class="sensor-item">
+                    <span style="color: #00ff88;">✓</span>
+                    <span>Rear Cam</span>
+                </div>
+                <div class="sensor-item">
+                    <span style="color: #00ff88;">✓</span>
+                    <span>Left Cam</span>
+                </div>
+                <div class="sensor-item">
+                    <span style="color: #00ff88;">✓</span>
+                    <span>Right Cam</span>
+                </div>
+                <div class="sensor-item">
+                    <span style="color: #00ff88;">✓</span>
+                    <span>Radar 77GHz</span>
+                </div>
+                <div class="sensor-item">
+                    <span style="color: #00ff88;">✓</span>
+                    <span>IMU</span>
+                </div>
+                <div class="sensor-item">
+                    <span style="color: #00ff88;">✓</span>
+                    <span>GPS RTK</span>
+                </div>
+                <div class="sensor-item">
+                    <span style="color: #00ff88;">✓</span>
+                    <span>V2N Modem</span>
+                </div>
+            </div>
+            
+            <div style="margin-top: 20px;">
+                <div class="metric">
+                    <span class="metric-label">AI Compute</span>
+                    <span class="metric-value">42%</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Memory</span>
+                    <span class="metric-value">3.2 GB</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Power Draw</span>
+                    <span class="metric-value">18W</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Temp</span>
+                    <span class="metric-value">58°C</span>
+                </div>
+            </div>
+            
+            <div style="margin-top: 15px; padding: 10px; background: rgba(102, 126, 234, 0.2); border-radius: 8px; font-size: 11px;">
+                <strong>Active Models:</strong><br>
+                ✓ YOLOv8 (Hazards)<br>
+                ✓ VPGNet (Lanes)<br>
+                ✓ Kalman (Dynamics)<br>
+                ✓ CNN (Blind Spots)<br>
+                ✓ RM-Xception (Face)<br>
+                ✓ EKF (Fusion)
+            </div>
+        </div>
+    </div>
+</body>
+</html>
